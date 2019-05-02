@@ -12,7 +12,7 @@ void Modelo::inicializarVertexArray
 	this->modeloID = transformacionesID;
 	this->vistaID = transformacionesID;
 	this->proyeccionID = transformacionesID;
-	
+
 	//Crear un vertex array
 	glGenVertexArrays(1, &vertexArrayID);
 	glBindVertexArray(vertexArrayID);

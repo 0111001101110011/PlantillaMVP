@@ -1,126 +1,174 @@
+// PlantillaOpenGL.cpp: define el punto de entrada de la aplicación de consola.
+//
+
 #include "stdafx.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define GLEW_STATIC
+
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+
+#include <iostream>
+
 #include "Shader.h"
+#include "Vertice.h"
+#include "Carro.h"
 
-GLuint Shader::getID() {
-	return shaderID;
-}
+#include "Modelo.h"
+#include "glm/glm.hpp"
+#include "glm/gtx/transform.hpp"
 
-Shader::Shader(const char * rutaVertex,
-	const char * rutaFragment) {
+using namespace std;
 
-	//Guardar en variables el texto de los codigos
-	//de los shaders
+Shader *shader;
+GLuint posicionID;
+GLuint colorID;
+GLuint transformacionesID;
+GLuint vistaID;
+GLuint modeloID;
+GLuint proyeccionID;
 
-	string codigoVertexShader;
-	ifstream vertexShaderStream(
-		rutaVertex, ios::in);
-	if (vertexShaderStream.is_open()) {
-		string linea;
-		while (getline(vertexShaderStream, linea)) {
-			codigoVertexShader +=
-				linea + "\n";
-		}
-		vertexShaderStream.close();
-	}
-	else {
-		cout << "No se pudo abrir el archivo: " <<
-			rutaVertex << endl;
-	}
 
-	string codigoFragmentShader;
-	ifstream fragmentShaderStream(
-		rutaFragment, ios::in
+Carro *carro;
+
+//Declaramos apuntador de ventana
+GLFWwindow *window;
+GLfloat ancho = 1024.0f;
+GLfloat alto = 768.0f;
+
+
+void establecerVista() {
+	vista = lookAt(
+		vec3(0.0f, 20.0f, 10.0f), //Posición de la camara
+		vec3(0.0f, 0.0f, 0.0f), //Posición del objetivo
+		vec3(0.0f, 1.0f, 0.0f) //Vector hacia arriba
 	);
-	if (fragmentShaderStream.is_open()) {
-		string linea;
-		while (getline(fragmentShaderStream, linea)) {
-			codigoFragmentShader +=
-				linea + "\n";
-		}
-		fragmentShaderStream.close();
-	}
-	else {
-		cout << "No se pudo abrir el archivo: " <<
-			rutaFragment << endl;
-	}
-
-	//Convertir de string a cadena de char
-	const char* cadenaCodigoVertex =
-		codigoVertexShader.c_str();
-	const char* cadenaCodigoFragment =
-		codigoFragmentShader.c_str();
-
-	//1.- Crear el programa de Shader
-	shaderID = glCreateProgram();
-	GLuint vertexShaderID =
-		glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragmentShaderID =
-		glCreateShader(GL_FRAGMENT_SHADER);
-
-	//2.- Cargar el código del shader
-	glShaderSource(vertexShaderID, 1,
-		&cadenaCodigoVertex, NULL);
-	glShaderSource(fragmentShaderID, 1,
-		&cadenaCodigoFragment, NULL);
-
-	//3.- Compilar los shaders
-	glCompileShader(vertexShaderID);
-	glCompileShader(fragmentShaderID);
-
-	//4.- Verificar errores de compilacion
-	verificarCompilacion(vertexShaderID);
-	verificarCompilacion(fragmentShaderID);
-
-	//5.- Adjuntar shaders al programa
-	glAttachShader(shaderID, vertexShaderID);
-	glAttachShader(shaderID, fragmentShaderID);
-
-	//6.- Vincular el programa
-	glLinkProgram(shaderID);
-
-	//7.- Verificar viculacion
-	verificarVinculacion(shaderID);
-
-	//8.- Usar el programa
-	glUseProgram(shaderID);
 }
 
-void Shader::enlazar() {
-	glUseProgram(shaderID);
+void establecerProyeccion() {
+	proyeccion = perspective(
+		90.0f, //Campo de vision (FoV)
+		ancho / alto, //relacion de aspecto (Aspecto Ratio)
+		0.1f, //Near Clipping (Desde donde renderea)
+		150.0f //Far clipping (Hasta donde renderea)
+	);
 }
 
-void Shader::desenlazar() {
-	glUseProgram(0);
+void dibujar() {
+	carro->(GL_QUADS);
 }
 
-void Shader::verificarCompilacion(GLuint id) {
-	GLint resultado = GL_FALSE;
-	GLint longitudLog = 0;
+void actualizar() {
 
-	glGetShaderiv(id, GL_COMPILE_STATUS, &resultado);
-	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &longitudLog);
+}
 
-	if (longitudLog > 0) {
-		vector<char> mensajeError(longitudLog);
-		glGetShaderInfoLog(id, longitudLog, NULL, &mensajeError[0]);
-		for (vector<char>::const_iterator i = mensajeError.begin();
-			i != mensajeError.end();
-			i++) {
-			cout << *i;
-		}
+int main()
+{
+
+
+	//Si no se pudo iniciar glfw
+	//terminamos ejcución
+	if (!glfwInit()) {
+		exit(EXIT_FAILURE);
 	}
-}
+	//Si se pudo iniciar GLFW
+	//entonces inicializamos la ventana
+	window =
+		glfwCreateWindow(1024, 768, "Ventana",
+			NULL, NULL);
+	//Si no podemos iniciar la ventana
+	//Entonces terminamos ejecucion
+	if (!window) {
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
+	//Establecemos el contexto
+	glfwMakeContextCurrent(window);
 
-void Shader::verificarVinculacion(GLuint id) {
-	GLint estadoVinculacion, estadoValidacion;
-
-	glGetProgramiv(id, GL_LINK_STATUS, &estadoVinculacion);
-	if (estadoVinculacion == GL_FALSE) {
-		cout << "No se pudo vicular programa" << endl;
+	//Una vez establecido  el contexto
+	//Activamos funciones modernas
+	glewExperimental = true;
+	GLenum errorGlew = glewInit();
+	if (errorGlew != GLEW_OK) {
+		cout <<
+			glewGetErrorString(errorGlew);
 	}
 
-	glGetProgramiv(id, GL_VALIDATE_STATUS, &estadoValidacion);
-	if (estadoValidacion == GL_FALSE) {
-		cout << "No se pudo validar la vinculacion" << endl;
+	const GLubyte *versionGL =
+		glGetString(GL_VERSION);
+	cout << "Version OpenGL: "
+		<< versionGL;
+
+
+	const char *rutaVertex =
+		"VertexShader.shader";
+	const char *rutaFragment =
+		"FragmentShader.shader";
+
+	shader = new Shader(rutaVertex, rutaFragment);
+
+	//Mapeo de atributos
+	posicionID =
+		glGetAttribLocation(shader->getID(), "posicion");
+	colorID =
+		glGetAttribLocation(shader->getID(), "color");
+	modeloID =
+		glGetUniformLocation(shader->getID(), "modelo");
+	vistaID =
+		glGetUniformLocation(shader->getID(), "vista");
+	proyeccionID =
+		glGetUniformLocation(shader->getID(), "proyeccion");
+
+	//Desenlazar el shader
+	shader->desenlazar();
+	establecerVista();
+	establecerProyeccion();
+
+	//Inicializar modelo y Establecer shader
+	carro = new Carro();
+	carro->vista = vista;
+	carro->proyeccion = proyeccion;
+	carro->shader = shader;
+	carro->inicializarVertexArray(posicionID, colorID, modeloID, vistaID, proyeccionID);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+
+	//Inicializar vertex array
+	triangulo->inicializarVertexArray(posicionID,
+		colorID, transformacionesID);
+
+	cuadrado->shader = shader;
+	cuadrado->inicializarVertexArray(posicionID,
+		colorID, transformacionesID);
+
+	//Ciclo de dibujo (Draw loop)
+	while (!glfwWindowShouldClose(window)) {
+		//Esablecer region de dibujo
+		glViewport(0, 0, 1024, 768);
+		//Establece el color de borrado
+		glClearColor(1, 0.2, 0.5, 1);
+		//Borramos
+		glClear(
+			GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//Rutina de dibujo
+		dibujar();
+		actualizar();
+
+		//Cambiar los buffers
+		glfwSwapBuffers(window);
+		//Reconocer si hay entradas
+		glfwPollEvents();
 	}
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
+
+	return 0;
 }
+
