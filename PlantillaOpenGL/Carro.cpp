@@ -1,7 +1,18 @@
 #include "stdafx.h"
 #include "Carro.h"
 
-Carro::Carro; {
+
+void Carro::actualizarMatrizModelo() {
+	modelo = mat4(1.0f);
+	modelo = translate(modelo, coordenadas);
+}
+
+void Carro::avanzar() {
+
+	coordenadas.z += 0.01;
+}
+
+Carro::Carro() {
 
 	vertices.push_back({ vec4(-0.5f, 0.40f, -0.7f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
 	vertices.push_back({ vec4(0.5f, 0.40f, -0.7f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
@@ -30,10 +41,6 @@ Carro::Carro; {
 	vertices.push_back({ vec4(0.5f, -0.05f,  2.0f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
 
 
-	/*cuadrado->vertices.push_back({ vec4(-0.5f, 0.40f, -0.7f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
-	cuadrado->vertices.push_back({ vec4(0.5f, 0.40f, -0.7f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
-	cuadrado->vertices.push_back({ vec4(0.5f, 0.40f, 0.5f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
-	cuadrado->vertices.push_back({ vec4(-0.5f, 0.40f, 0.5f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });*/
 
 
 	vertices.push_back({ vec4(-0.5f, 0.40f, 0.5f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });

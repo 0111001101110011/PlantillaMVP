@@ -4,15 +4,16 @@
 Modelo::Modelo() {
 	//Establecer transformaciones con una
 	//matriz identidad
-	transformaciones = mat4(1.0f);
+	modelo = mat4(1.0f);
 }
 
 void Modelo::inicializarVertexArray
-(GLuint posicionID, GLuint colorID, GLuint transformacionesID) {
-	this->modeloID = transformacionesID;
-	this->vistaID = transformacionesID;
-	this->proyeccionID = transformacionesID;
-
+(GLuint posicionID, GLuint colorID, 
+	GLuint modeloID, GLuint vistaID, GLuint proyeccionID) {
+	this->modeloID = modeloID;
+	this->vistaID = vistaID;
+	this->proyeccionID = proyeccionID;
+	
 	//Crear un vertex array
 	glGenVertexArrays(1, &vertexArrayID);
 	glBindVertexArray(vertexArrayID);
@@ -40,8 +41,12 @@ void Modelo::dibujar(GLenum modoDibujo) {
 	shader->enlazar();
 	glBindVertexArray(vertexArrayID);
 
-	glUniformMatrix4fv(transformacionesID, 1, GL_FALSE,
-		&transformaciones[0][0]);
+	glUniformMatrix4fv(modeloID, 1, GL_FALSE,
+		&modelo[0][0]);
+	glUniformMatrix4fv(vistaID, 1, GL_FALSE,
+		&vista[0][0]);
+	glUniformMatrix4fv(proyeccionID, 1, GL_FALSE,
+		&proyeccion[0][0]);
 
 	glDrawArrays(modoDibujo, 0, vertices.size());
 	glBindVertexArray(0);
